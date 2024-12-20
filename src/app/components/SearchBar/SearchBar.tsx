@@ -5,7 +5,7 @@ import { useWeather } from "../../context/Weather";
 const SearchBar = () => {
   const [query, setQuery] = useState<string>("");
 
-  const { fetchWeatherData, isLoading } = useWeather();
+  const { fetchWeatherData, isLoading, error } = useWeather();
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,6 +34,7 @@ const SearchBar = () => {
       >
         {isLoading ? "Loading..." : "Search"}
       </button>
+      {error && <p className="text-red-500 text-sm font-bold">{error?.message}</p>}
     </form>
   );
 };

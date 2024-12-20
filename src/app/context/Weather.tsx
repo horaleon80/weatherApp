@@ -4,10 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getForecast } from "../../api/methods";
 import { IForecastData } from "../../api/types";
 
+interface IError {
+    message: string;
+    code: number;
+}
 interface WeatherContextType {
   weatherData: IForecastData | undefined;
   isLoading: boolean;
   fetchWeatherData: (query: string) => void;
+  error: IError | null;
 }
 
 const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
@@ -16,18 +21,20 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [query, setQuery] = React.useState<string>("");
+  const [error, setError] = React.useState<IError | null>(null);
 
   const {
     data: weatherData,
     refetch,
     isLoading: isLoadingWeatherData,
-    isRefetching
+    isRefetching,
+    error: errorWeatherData,
+    isError,
   } = useQuery({
     queryKey: ["getForecast", query],
     queryFn: () => getForecast(query),
     enabled: false,
   });
-
   const isLoading = isLoadingWeatherData || isRefetching;
 
   const fetchWeatherData = (searchQuery: string) => {
@@ -35,17 +42,28 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   useEffect(() => {
+    if (isError && errorWeatherData) {
+      const errorMessage =
+        (errorWeatherData as { response?: { data?: { error?: IError } } })
+          ?.response?.data?.error || { message: "An unknown error occurred", code: 0 };
+      setError(errorMessage);
+    }
+  }, [errorWeatherData, isError]);
+
+  useEffect(() => {
     if (query) {
       refetch();
+      setError(null);
     }
   }, [query, refetch]);
-  
+
   return (
     <WeatherContext.Provider
       value={{
         weatherData,
         isLoading,
         fetchWeatherData,
+        error,
       }}
     >
       {children}
