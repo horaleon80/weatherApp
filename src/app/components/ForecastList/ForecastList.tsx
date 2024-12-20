@@ -7,6 +7,8 @@ const Forecast = () => {
 
   const forecast = weatherData?.forecast?.forecastday;
 
+  if (!forecast) return <></>;
+
   return (
     <div className="pt-4 max-w-[672px] mx-auto">
       <h2 className="text-white text-2xl font-bold mb-4">Forecast</h2>
